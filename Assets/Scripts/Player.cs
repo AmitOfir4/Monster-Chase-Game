@@ -125,7 +125,7 @@ public class Player : MonoBehaviour
         if (collision.gameObject.CompareTag(COIN_TAG))
         {
             Destroy(collision.gameObject);
-            GivePlayerShield(gameObject);
+            GivePlayerShield();
         }
     }
 
@@ -137,7 +137,7 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void GivePlayerShield(GameObject player)
+    private void GivePlayerShield()
     {
         hasShield = true;
         Debug.Log("Shield activated for 10 seconds");
