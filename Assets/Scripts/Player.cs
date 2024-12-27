@@ -12,16 +12,16 @@ public class Player : MonoBehaviour
     [SerializeField] 
     private float jumpForce = 11f;
 
-    private float movementX;
-    private float movementY;
+    private float _movementX;
+    private float _movementY;
     [SerializeField]
     private Rigidbody2D myBody;
-    private Animator anim;
-    private SpriteRenderer sr;
+    private Animator _anim;
+    private SpriteRenderer _sr;
     private string WALK_ANIMATION = "Walk";
     private string GROUND_TAG = "Ground";
-    private bool isGrounded = true;
-    private bool hasShield = false;
+    private bool _isGrounded = true;
+    private bool _hasShield = false;
     private string ENEMY_TAG = "Enemy";
     private string COIN_TAG = "Coin";
 
@@ -31,8 +31,8 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         myBody = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
-        sr = GetComponent<SpriteRenderer>();
+        _anim = GetComponent<Animator>();
+        _sr = GetComponent<SpriteRenderer>();
     }
 
     // Start is called before the first frame update
@@ -54,8 +54,8 @@ public class Player : MonoBehaviour
 
     void PlayerMoveKeyboard()
     {
-        movementX = Input.GetAxisRaw("Horizontal");
-        transform.position += new Vector3(movementX, 0f, 0f) * Time.deltaTime * moveForce;
+        _movementX = Input.GetAxisRaw("Horizontal");
+        transform.position += new Vector3(_movementX, 0f, 0f) * Time.deltaTime * moveForce;
     }
 
     void AnimatePlayer()
@@ -66,46 +66,46 @@ public class Player : MonoBehaviour
         }
         else
         {
-            if (movementX > 0)
+            if (_movementX > 0)
             {
-                anim.SetBool(WALK_ANIMATION, true);
-                sr.flipX = false;
+                _anim.SetBool(WALK_ANIMATION, true);
+                _sr.flipX = false;
             }
-            else if (movementX < 0)
+            else if (_movementX < 0)
             {
-                anim.SetBool(WALK_ANIMATION, true);
-                sr.flipX = true;
+                _anim.SetBool(WALK_ANIMATION, true);
+                _sr.flipX = true;
             }
             else
             {
-                anim.SetBool(WALK_ANIMATION, false);
+                _anim.SetBool(WALK_ANIMATION, false);
             }
         }
     }
 
     void AnimateRino()
     {
-        if (movementX > 0)
+        if (_movementX > 0)
         {
-            anim.SetBool(WALK_ANIMATION, true);
-            sr.flipX = true;
+            _anim.SetBool(WALK_ANIMATION, true);
+            _sr.flipX = true;
         }
-        else if (movementX < 0)
+        else if (_movementX < 0)
         {
-            anim.SetBool(WALK_ANIMATION, true);
-            sr.flipX = false;
+            _anim.SetBool(WALK_ANIMATION, true);
+            _sr.flipX = false;
         }
         else
         {
-            anim.SetBool(WALK_ANIMATION, false);
+            _anim.SetBool(WALK_ANIMATION, false);
         }
     }
 
     void PlayerJump()
     {
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (Input.GetButtonDown("Jump") && _isGrounded)
         {
-           isGrounded = false;
+           _isGrounded = false;
            myBody.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
         }
     }
@@ -114,10 +114,10 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.CompareTag(GROUND_TAG))
         {
-            isGrounded = true;
+            _isGrounded = true;
         }
 
-        if (collision.gameObject.CompareTag(ENEMY_TAG) && !hasShield)
+        if (collision.gameObject.CompareTag(ENEMY_TAG) && !_hasShield)
         {
             Destroy(gameObject);
         }
@@ -131,7 +131,7 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag(ENEMY_TAG) && !hasShield)
+        if (collision.gameObject.CompareTag(ENEMY_TAG) && !_hasShield)
         {
             Destroy(gameObject);
         }
@@ -139,7 +139,7 @@ public class Player : MonoBehaviour
 
     private void GivePlayerShield()
     {
-        hasShield = true;
+        _hasShield = true;
         Debug.Log("Shield activated for 10 seconds");
         StartCoroutine(DisableShieldAfterTime(10f));
     }
@@ -147,7 +147,7 @@ public class Player : MonoBehaviour
     private IEnumerator DisableShieldAfterTime(float duration)
     {
         yield return new WaitForSeconds(duration);
-        hasShield = false;
+        _hasShield = false;
         Debug.Log("Shield disabled after 10 seconds");
     }
 }
