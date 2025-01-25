@@ -22,6 +22,8 @@ public class Player : MonoBehaviour
     private string GROUND_TAG = "Ground";
     private bool _isGrounded = true;
     private bool _hasShield = false;
+    private Coroutine _shieldCoroutine;
+    private float _shieldDuration = 10f;
     private string ENEMY_TAG = "Enemy";
     private string COIN_TAG = "Coin";
 
@@ -124,7 +126,7 @@ public class Player : MonoBehaviour
         
         if (collision.gameObject.CompareTag(COIN_TAG))
         {
-            Destroy(collision.gameObject);
+            Destroy(collision.transform.root.gameObject);
             GivePlayerShield();
         }
     }
@@ -140,14 +142,20 @@ public class Player : MonoBehaviour
     private void GivePlayerShield()
     {
         _hasShield = true;
-        Debug.Log("Shield activated for 10 seconds");
-        StartCoroutine(DisableShieldAfterTime(10f));
+        Debug.Log($"Shield activated for {_shieldDuration} seconds");
+
+        if (_shieldCoroutine != null)
+        {
+            StopCoroutine(_shieldCoroutine);
+        }
+
+        _shieldCoroutine = StartCoroutine(DisableShieldAfterTime(_shieldDuration));
     }
     
     private IEnumerator DisableShieldAfterTime(float duration)
     {
         yield return new WaitForSeconds(duration);
         _hasShield = false;
-        Debug.Log("Shield disabled after 10 seconds");
+        Debug.Log($"Shield disabled after {_shieldDuration} seconds");
     }
 }
