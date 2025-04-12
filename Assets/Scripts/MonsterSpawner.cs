@@ -9,8 +9,8 @@ public class MonsterSpawner : MonoBehaviour
     [SerializeField] private Transform leftPos, rightPos;
     [SerializeField] private GameObject spawnedMonster;
 
-    private int randomIndex;
-    private int randomSide;
+    private int _randomIndex;
+    private int _randomSide;
     
     // Start is called before the first frame update
     void Start()
@@ -23,13 +23,13 @@ public class MonsterSpawner : MonoBehaviour
         while (true)
         {
             yield return new WaitForSeconds(Random.Range(1, 5));
+            
+            _randomIndex = Random.Range(0, monsterReference.Length);
+            _randomSide = Random.Range(0, 2);
 
-            randomIndex = Random.Range(0, monsterReference.Length);
-            randomSide = Random.Range(0, 2);
+            spawnedMonster = Instantiate(monsterReference[_randomIndex]);
 
-            spawnedMonster = Instantiate(monsterReference[randomIndex]);
-
-            if(randomSide == 0)
+            if (_randomSide == 0)
             {
                 spawnedMonster.transform.position = leftPos.position;
                 spawnedMonster.GetComponent<Monster>().speed = Random.Range(4, 10);

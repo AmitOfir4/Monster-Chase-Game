@@ -6,22 +6,26 @@ using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField]
-    private float moveForce = 10f;
+    [SerializeField] private float moveForce = 10f;
     
-    [SerializeField] 
-    private float jumpForce = 11f;
+    [SerializeField] private float jumpForce = 11f;
 
-    private float movementX;
-    private float movementY;
+    [SerializeField] private ShieldUI shieldUI;
+
+    private float _movementX;
+    private float _movementY;
     [SerializeField]
     private Rigidbody2D myBody;
-    private Animator anim;
-    private SpriteRenderer sr;
+    private Animator _anim;
+    private SpriteRenderer _sr;
     private string WALK_ANIMATION = "Walk";
     private string GROUND_TAG = "Ground";
-    private bool isGrounded = true;
+    private bool _isGrounded = true;
+    private bool _hasShield = false;
+    private Coroutine _shieldCoroutine;
+    private float _shieldDuration = 10f;
     private string ENEMY_TAG = "Enemy";
+    private string COIN_TAG = "Coin";
 
     [SerializeField]
     private Timer timer;
@@ -29,8 +33,8 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         myBody = GetComponent<Rigidbody2D>();
-        anim = GetComponent<Animator>();
-        sr = GetComponent<SpriteRenderer>();
+        _anim = GetComponent<Animator>();
+        _sr = GetComponent<SpriteRenderer>();
     }
 
     // Start is called before the first frame update
@@ -39,6 +43,10 @@ public class Player : MonoBehaviour
         if (timer == null)
         {
             timer = FindObjectOfType<Timer>();
+        }
+        if (shieldUI ==  null)
+        {
+            shieldUI = FindObjectOfType<ShieldUI>();
         }
     }
 
@@ -52,61 +60,58 @@ public class Player : MonoBehaviour
 
     void PlayerMoveKeyboard()
     {
-        movementX = Input.GetAxisRaw("Horizontal");
-        transform.position += new Vector3(movementX, 0f, 0f) * Time.deltaTime * moveForce;
+        _movementX = Input.GetAxisRaw("Horizontal");
+        transform.position += new Vector3(_movementX, 0f, 0f) * Time.deltaTime * moveForce;
     }
 
     void AnimatePlayer()
     {
-        Debug.Log(gameObject.name);
         if (gameObject.name == "Rino(Clone)")
         {
             AnimateRino();
         }
         else
         {
-            if (movementX > 0)
+            if (_movementX > 0)
             {
-                anim.SetBool(WALK_ANIMATION, true);
-                sr.flipX = false;
-                Debug.Log(gameObject.name);
+                _anim.SetBool(WALK_ANIMATION, true);
+                _sr.flipX = false;
             }
-            else if (movementX < 0)
+            else if (_movementX < 0)
             {
-                anim.SetBool(WALK_ANIMATION, true);
-                sr.flipX = true;
+                _anim.SetBool(WALK_ANIMATION, true);
+                _sr.flipX = true;
             }
             else
             {
-                anim.SetBool(WALK_ANIMATION, false);
+                _anim.SetBool(WALK_ANIMATION, false);
             }
         }
     }
 
     void AnimateRino()
     {
-        if (movementX > 0)
+        if (_movementX > 0)
         {
-            anim.SetBool(WALK_ANIMATION, true);
-            sr.flipX = true;
-            Debug.Log(gameObject.name);
+            _anim.SetBool(WALK_ANIMATION, true);
+            _sr.flipX = true;
         }
-        else if (movementX < 0)
+        else if (_movementX < 0)
         {
-            anim.SetBool(WALK_ANIMATION, true);
-            sr.flipX = false;
+            _anim.SetBool(WALK_ANIMATION, true);
+            _sr.flipX = false;
         }
         else
         {
-            anim.SetBool(WALK_ANIMATION, false);
+            _anim.SetBool(WALK_ANIMATION, false);
         }
     }
 
     void PlayerJump()
     {
-        if (Input.GetButtonDown("Jump") && isGrounded)
+        if (Input.GetButtonDown("Jump") && _isGrounded)
         {
-           isGrounded = false;
+           _isGrounded = false;
            myBody.AddForce(new Vector2(0f, jumpForce), ForceMode2D.Impulse);
         }
     }
@@ -115,20 +120,51 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject.CompareTag(GROUND_TAG))
         {
-            isGrounded = true;
+            _isGrounded = true;
         }
 
-        if (collision.gameObject.CompareTag(ENEMY_TAG))
+        if (collision.gameObject.CompareTag(ENEMY_TAG) && !_hasShield)
         {
             Destroy(gameObject);
+        }
+        
+        if (collision.gameObject.CompareTag(COIN_TAG))
+        {
+            Destroy(collision.transform.root.gameObject);
+            GivePlayerShield();
         }
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.CompareTag(ENEMY_TAG))
+        if (collision.gameObject.CompareTag(ENEMY_TAG) && !_hasShield)
         {
             Destroy(gameObject);
         }
+    }
+
+    private void GivePlayerShield()
+    {
+        _hasShield = true;
+        Debug.Log($"Shield activated for {_shieldDuration} seconds");
+
+        if (_shieldCoroutine != null)
+        {
+            StopCoroutine(_shieldCoroutine);
+        }
+
+        _shieldCoroutine = StartCoroutine(DisableShieldAfterTime(_shieldDuration));
+
+        if (shieldUI != null)
+        {
+            shieldUI.ActivateShield(_shieldDuration);
+        }
+    }
+    
+    private IEnumerator DisableShieldAfterTime(float duration)
+    {
+        yield return new WaitForSeconds(duration);
+        _hasShield = false;
+        Debug.Log($"Shield disabled after {_shieldDuration} seconds");
     }
 }
