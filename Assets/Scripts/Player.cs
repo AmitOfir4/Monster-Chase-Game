@@ -6,11 +6,11 @@ using UnityEngine.UIElements;
 
 public class Player : MonoBehaviour
 {
-    [SerializeField]
-    private float moveForce = 10f;
+    [SerializeField] private float moveForce = 10f;
     
-    [SerializeField] 
-    private float jumpForce = 11f;
+    [SerializeField] private float jumpForce = 11f;
+
+    [SerializeField] private ShieldUI shieldUI;
 
     private float _movementX;
     private float _movementY;
@@ -43,6 +43,10 @@ public class Player : MonoBehaviour
         if (timer == null)
         {
             timer = FindObjectOfType<Timer>();
+        }
+        if (shieldUI ==  null)
+        {
+            shieldUI = FindObjectOfType<ShieldUI>();
         }
     }
 
@@ -150,6 +154,11 @@ public class Player : MonoBehaviour
         }
 
         _shieldCoroutine = StartCoroutine(DisableShieldAfterTime(_shieldDuration));
+
+        if (shieldUI != null)
+        {
+            shieldUI.ActivateShield(_shieldDuration);
+        }
     }
     
     private IEnumerator DisableShieldAfterTime(float duration)

@@ -10,8 +10,6 @@ public class ShieldSpawner : MonoBehaviour
     
     private int _randomSide;
 
-    
-    
     // Start is called before the first frame update
     void Start()
     {
