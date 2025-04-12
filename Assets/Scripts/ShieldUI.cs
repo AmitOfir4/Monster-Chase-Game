@@ -1,33 +1,68 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ShieldUI : MonoBehaviour
 {
     [SerializeField] private Slider shieldBar;
+    [SerializeField] private string anchorObjectName = "ShieldBarAnchor"; // The child GameObject name on Player
+    [SerializeField] private Vector3 screenOffset = new Vector3(0, 50, 0);
 
+    private Transform followTarget;
     private float shieldTime;
-    private float _shieldDuration;
+    private float shieldDuration;
     private bool isShieldActive = false;
 
-    public void ActivateShield(float duration)
+
+    private void Start()
     {
-      _shieldDuration = duration;
-      shieldTime = duration;
-      isShieldActive = true;
-      shieldBar.maxValue = duration;
-      shieldBar.value = duration;
-      shieldBar.gameObject.SetActive(true);
+        // Initialize the shield bar
+        shieldBar.gameObject.SetActive(false);
+        shieldBar.maxValue = shieldDuration;
+        shieldBar.value = 0f;
+
+        // Try to find the followTarget if it's not already assigned
+        if (followTarget == null)
+        {
+            var playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                var anchor = playerObj.transform.Find(anchorObjectName);
+                if (anchor != null)
+                {
+                    followTarget = anchor;
+                }
+            }
+        }
     }
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        if (!isShieldActive)
+        // Try to find the followTarget if it's not already assigned
+        if (followTarget == null)
         {
-            return;
+            var playerObj = GameObject.FindGameObjectWithTag("Player");
+            if (playerObj != null)
+            {
+                var anchor = playerObj.transform.Find(anchorObjectName);
+                if (anchor != null)
+                {
+                    followTarget = anchor;
+                }
+            }
         }
+
+        // Position the UI
+        if (followTarget != null)
+        {
+            Vector3 screenPos = Camera.main.WorldToScreenPoint(followTarget.position);
+            if (screenPos.z > 0)
+            {
+                shieldBar.transform.position = screenPos + screenOffset;
+            }
+        }
+
+        // Update bar value
+        if (!isShieldActive) return;
 
         shieldTime -= Time.deltaTime;
         shieldBar.value = shieldTime;
@@ -37,5 +72,15 @@ public class ShieldUI : MonoBehaviour
             isShieldActive = false;
             shieldBar.gameObject.SetActive(false);
         }
+    }
+
+    public void ActivateShield(float duration)
+    {
+        shieldDuration = duration;
+        shieldTime = duration;
+        isShieldActive = true;
+        shieldBar.maxValue = duration;
+        shieldBar.value = duration;
+        shieldBar.gameObject.SetActive(true);
     }
 }
