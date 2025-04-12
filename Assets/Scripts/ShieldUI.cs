@@ -12,32 +12,14 @@ public class ShieldUI : MonoBehaviour
     private float shieldDuration;
     private bool isShieldActive = false;
 
-
-    private void Start()
-    {
-        // Initialize the shield bar
-        shieldBar.gameObject.SetActive(false);
-        shieldBar.maxValue = shieldDuration;
-        shieldBar.value = 0f;
-
-        // Try to find the followTarget if it's not already assigned
-        if (followTarget == null)
-        {
-            var playerObj = GameObject.FindGameObjectWithTag("Player");
-            if (playerObj != null)
-            {
-                var anchor = playerObj.transform.Find(anchorObjectName);
-                if (anchor != null)
-                {
-                    followTarget = anchor;
-                }
-            }
-        }
-    }
-
     private void Update()
     {
-        // Try to find the followTarget if it's not already assigned
+        if (!isShieldActive)
+        {
+            shieldBar.gameObject.SetActive(false);
+            return;
+        };
+
         if (followTarget == null)
         {
             var playerObj = GameObject.FindGameObjectWithTag("Player");
@@ -51,18 +33,23 @@ public class ShieldUI : MonoBehaviour
             }
         }
 
-        // Position the UI
         if (followTarget != null)
         {
-            Vector3 screenPos = Camera.main.WorldToScreenPoint(followTarget.position);
-            if (screenPos.z > 0)
+            Vector3 worldPos = followTarget.position;
+            Vector3 screenPoint = Camera.main.WorldToScreenPoint(worldPos);
+
+            Canvas canvas = shieldBar.GetComponentInParent<Canvas>();
+            RectTransform canvasRect = canvas.GetComponent<RectTransform>();
+            RectTransform shieldRect = shieldBar.GetComponent<RectTransform>();
+
+            Vector2 localPoint;
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPoint, Camera.main, out localPoint))
             {
-                shieldBar.transform.position = screenPos + screenOffset;
+                shieldRect.anchoredPosition = localPoint + (Vector2)screenOffset;
             }
         }
 
-        // Update bar value
-        if (!isShieldActive) return;
+        
 
         shieldTime -= Time.deltaTime;
         shieldBar.value = shieldTime;
@@ -73,6 +60,7 @@ public class ShieldUI : MonoBehaviour
             shieldBar.gameObject.SetActive(false);
         }
     }
+
 
     public void ActivateShield(float duration)
     {
